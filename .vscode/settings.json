@@ -1,0 +1,28 @@
+{
+  "files.exclude": {
+    // "**/.git": true,
+    // "**/.svn": true,
+    // "**/.hg": true,
+    // "**/CVS": true,
+    // "**/.DS_Store": true,
+    // "**/Thumbs.db": true,
+    // "**/.classpath": true,
+    // "**/.factorypath": true,
+    // "**/.project": true,
+    // "**/.settings": true,
+    // "**/*.exe": true,
+    // "**/*.o": true
+  },
+  "explorerExclude.backup": {},
+  "files.associations": {
+    "value.h": "c",
+    "common.h": "c",
+    "debug.h": "c",
+    "vm.h": "c",
+    "chunk.h": "c",
+    "compiler.h": "c",
+    "type_traits": "c",
+    "memory.h": "c"
+  },
+  "C_Cpp.errorSquiggles": "Disabled"
+}

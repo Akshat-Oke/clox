@@ -1,0 +1,7 @@
+Program = statement* ;
+
+statement = exprStmt
+          | printStmt ;
+
+declaration = varDecl
+            | statement ;

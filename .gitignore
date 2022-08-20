@@ -1,0 +1,5 @@
+**/*.exe
+!clox.exe
+.vscode/*
+!.vscode/settings.json
+**/*.o
