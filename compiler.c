@@ -33,7 +33,7 @@ typedef enum
   PREC_PRIMARY, // highest precendence
 } Precedence;
 
-typedef void (*ParseFn)();
+typedef void (*ParseFn)(bool canAssign);
 
 typedef struct
 {
@@ -160,11 +160,25 @@ static void declaration();
 static ParseRule *getRule(TokenType type);
 static void parsePrecedence(Precedence p);
 
+static uint8_t identifierConstant(Token *name)
+{
+  return makeConstant(OBJ_VAL(copyString(name->start, name->length)));
+}
+static uint8_t parseVariable(const char *errorMessage)
+{
+  consume(TOKEN_IDENTIFIER, errorMessage);
+  return identifierConstant(&parser.previous);
+}
+static void defineVariable(uint8_t global)
+{
+  emitBytes(OP_DEFINE_GLOBAL, global);
+}
+
 // In a prefix parser function,
 // the leading operator is already consumed
 // and in  an infix function, the operator is
 // also consumed and the left operand compiled
-static void binary()
+static void binary(bool _canAssign)
 {
   // left-right-operator will be the stack in VM
   TokenType operatorType = parser.previous.type;
@@ -215,7 +229,7 @@ static void binary()
     return; // unreachable
   }
 }
-static void literal()
+static void literal(bool _canAssign)
 {
   switch (parser.previous.type)
   {
@@ -233,25 +247,43 @@ static void literal()
   }
 }
 // Grouping (expr) does not emit any bytecode
-static void grouping()
+static void grouping(bool _canAssign)
 {
   expression();
   consume(TOKEN_RIGHT_PAREN, "Expected ')' after expression");
 }
-static void number()
+static void number(bool _canAssign)
 {
   double value = strtod(parser.previous.start, NULL);
   // printf("[Debug print] Found value %g\n", AS_NUMBER(NUMBER_VAL(value)));
   emitConstant(NUMBER_VAL(value));
 }
-static void string()
+static void string(bool _canAssign)
 {
   emitConstant(OBJ_VAL(copyString(parser.previous.start + 1,
                                   parser.previous.length - 2)));
 }
+// Ex. foo = 4;
+//'foo' is current token
+static void namedVariable(Token name, bool canAssign)
+{
+  uint8_t arg = identifierConstant(&name);
+  if (canAssign && match(TOKEN_EQUAL))
+  {
+    // means it is an assignment statement
+    expression(); // compile the following expression
+    emitBytes(OP_SET_GLOBAL, arg);
+  }
+  else
+    emitBytes(OP_GET_GLOBAL, arg);
+}
+static void variable(bool canAssign)
+{
+  namedVariable(parser.previous, canAssign);
+}
 // -123
 // '-' is in previous and '123'(operand) in current
-static void unary()
+static void unary(bool _canAssign)
 {
   TokenType operatorType = parser.previous.type;
   // compile operand
@@ -290,7 +322,7 @@ ParseRule rules[] = {
     [TOKEN_GREATER_EQUAL] = {NULL, binary, PREC_COMPARISON},
     [TOKEN_LESS] = {NULL, binary, PREC_COMPARISON},
     [TOKEN_LESS_EQUAL] = {NULL, binary, PREC_COMPARISON},
-    [TOKEN_IDENTIFIER] = {NULL, NULL, PREC_NONE},
+    [TOKEN_IDENTIFIER] = {variable, NULL, PREC_NONE},
     [TOKEN_STRING] = {string, NULL, PREC_NONE},
     [TOKEN_NUMBER] = {number, NULL, PREC_NONE},
     [TOKEN_AND] = {NULL, NULL, PREC_NONE},
@@ -321,17 +353,50 @@ static void parsePrecedence(Precedence precedence)
     error("Expected expression");
     return;
   }
-  prefixRule();
+  // a*b=c+d; is not a valid assignment
+  // so if we are in here with a*|b=c+d (looking at b)
+  // and are going to call variable() through prefixRule(),
+  // variable() should consider the trailing '=' as a valid assignment
+  // only if the precedence of current expr (b=c+d) is lower than precedence
+  // of '='.
+  //
+  // But since precedence of '=' is lowest, this only allows a top-level assignment
+  bool canAssign = precedence <= PREC_ASSIGNMENT;
+  prefixRule(canAssign);
   while (precedence <= getRule(parser.current.type)->precedence)
   {
     advance();
     ParseFn infixRule = getRule(parser.previous.type)->infix;
-    infixRule();
+    // infix don't need this canAssign flag, but since
+    // all these have the same function signatures in the table,
+    // we have to include it
+    infixRule(canAssign);
+  }
+  // if we encounter a rouge '=', we will end up here
+  // since no precedence will be < '='
+  if (canAssign && match(TOKEN_EQUAL))
+  {
+    error("Invalid assignment target");
   }
 }
 static void expression()
 {
   parsePrecedence(PREC_ASSIGNMENT);
+}
+static void varDeclaration()
+{
+  uint8_t global = parseVariable("Expected variable name");
+  if (match(TOKEN_EQUAL))
+  {
+    expression();
+  }
+  else
+  {
+    emitByte(OP_NIL); // assign nil to variable if there is no initializer
+  }
+  consume(TOKEN_SEMICOLON, "Expected ';' after variable declaration");
+
+  defineVariable(global);
 }
 static void expressionStatement()
 {
@@ -345,9 +410,41 @@ static void printStatement()
   consume(TOKEN_SEMICOLON, "Expected ';' after expression");
   emitByte(OP_PRINT);
 }
+static void synchronize()
+{
+  parser.panicMode = false;
+  while (parser.current.type != TOKEN_EOF)
+  {
+    if (parser.previous.type == TOKEN_SEMICOLON)
+      return;
+    switch (parser.current.type)
+    {
+    case TOKEN_CLASS:
+    case TOKEN_FUN:
+    case TOKEN_VAR:
+    case TOKEN_FOR:
+    case TOKEN_IF:
+    case TOKEN_WHILE:
+    case TOKEN_PRINT:
+    case TOKEN_RETURN:
+      return;
+    default:;
+    }
+    advance();
+  }
+}
 static void declaration()
 {
-  statement();
+  if (match(TOKEN_VAR))
+  {
+    varDeclaration();
+  }
+  else
+  {
+    statement();
+  }
+  if (parser.panicMode)
+    synchronize();
 }
 static void statement()
 {

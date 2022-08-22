@@ -14,6 +14,8 @@ typedef struct
   // top = ununsed space at the top,
   // next value pushed is here
   Value *stackTop;
+  // global variables
+  Table globals;
   // interned strings (unique strings stored only once)
   Table strings;
   // objects as linked list

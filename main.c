@@ -7,7 +7,10 @@
 #include "debug.h"
 #include "value.h"
 #include "vm.h"
+#include "table.h"
+#include "object.h"
 
+static void testTables();
 static void repl()
 {
   char line[1024];
@@ -65,6 +68,8 @@ static void runFile(const char *path)
 
 int main(int argc, const char *argv[])
 {
+  // testTables();
+  // return 0;
   initVM();
 
   if (argc == 1)
@@ -82,4 +87,16 @@ int main(int argc, const char *argv[])
   }
   freeVM();
   return 0;
+}
+
+static void testTables()
+{
+  Table table;
+  initTable(&table);
+  ObjString *o1 = takeString("a", 1);
+  ObjString *o2 = takeString("b", 1);
+  tableSet(&table, o1, NIL_VAL);
+  Value v;
+  printf("\n%d", tableGet(&table, o1, &v));
+  printf("\n%d", tableGet(&table, o2, &v));
 }

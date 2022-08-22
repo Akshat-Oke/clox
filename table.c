@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
+#include "common.h"
 #include "memory.h"
 #include "value.h"
 #include "object.h"
@@ -22,12 +24,14 @@ void freeTable(Table *table)
 static Entry *findEntry(Entry *entries, int capacity, ObjString *key)
 {
   uint32_t index = key->hash % capacity;
+  debugLog("\nFinding index: %u : ", index);
   Entry *tombstone = NULL;
   for (;;)
   {
     Entry *entry = &entries[index];
     if (entry->key == NULL)
     {
+      // debugLog("NULL ");
       if (IS_NIL(entry->value))
       {
         // means this is an empty entry, not
@@ -37,9 +41,13 @@ static Entry *findEntry(Entry *entries, int capacity, ObjString *key)
       else
       {
         // found a tombstone
-        if (tombstone != NULL)
+        if (tombstone == NULL)
           tombstone = entry;
       }
+    }
+    else if (entry->key == key)
+    {
+      return entry;
     }
     index = (index + 1) % capacity;
   }
@@ -71,7 +79,7 @@ static void adjustCapacity(Table *table, int capacity)
   table->capacity = capacity;
 }
 // Sets a key to value, overwriting if it exists
-// returns if the key existed already
+// returns if the key didn't exist already
 bool tableSet(Table *table, ObjString *key, Value value)
 {
   if (table->count + 1 > table->capacity * TABLE_MAX_LOAD)
