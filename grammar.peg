@@ -1,7 +1,11 @@
 Program = statement* ;
 
 statement = exprStmt
-          | printStmt ;
+          | printStmt
+          | ifStmt
+          | block ;
+
+block = "{" declaration* "}" ;
 
 declaration = varDecl
             | statement ;

@@ -23,7 +23,7 @@ void freeTable(Table *table)
 }
 static Entry *findEntry(Entry *entries, int capacity, ObjString *key)
 {
-  uint32_t index = key->hash % capacity;
+  uint32_t index = key->hash % (capacity);
   debugLog("\nFinding index: %u : ", index);
   Entry *tombstone = NULL;
   for (;;)
