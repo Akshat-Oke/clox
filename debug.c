@@ -24,6 +24,13 @@ static int byteInstruction(const char *name, const Chunk *chunk, int offset)
   printf("%-16s %4d\n", name, slot);
   return offset + 2;
 }
+static int jumpInstruction(const char *name, int sign, const Chunk *chunk, int offset)
+{
+  uint16_t jump = (uint16_t)(chunk->code[offset + 1] << 8);
+  jump |= (chunk->code[offset + 2]);
+  printf("%-16s %4d -> %d\n", name, offset, offset + 3 + sign * jump);
+  return offset + 3;
+}
 /**
  * This is OP_CONSTANT _constant_index
  * Ex. OP_CONSTANT 0
@@ -90,8 +97,16 @@ int disassembleInstruction(const Chunk *chunk, int offset)
     return simpleInstruction("OP_NEGATE", offset);
   case OP_PRINT:
     return simpleInstruction("OP_PRINT", offset);
+  case OP_JUMP:
+    return jumpInstruction("OP_JUMP", 1, chunk, offset);
+  case OP_JUMP_IF_FALSE:
+    return jumpInstruction("OP_JUMP_IF_FALSE", 1, chunk, offset);
+  case OP_LOOP:
+    return jumpInstruction("OP_LOOP", -1, chunk, offset);
   case OP_RETURN:
     return simpleInstruction("OP_RETURN", offset);
+  case OP_NO_OP:
+    return simpleInstruction("OP_NO_OP", offset);
   default:
     printf("Unknown opcode %d\n", instruction);
     return offset + 1;

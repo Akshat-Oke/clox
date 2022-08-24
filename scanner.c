@@ -91,6 +91,7 @@ static void skipWhiteSpace()
           advance();
         // we skip the last \n so that the
         // next loop increments line.
+        break;
       }
       else
       {
@@ -121,7 +122,7 @@ static bool isDigit(char c)
 }
 static bool isAlpha(char c)
 {
-  return c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c == '_';
+  return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c == '_');
 }
 // static Token number()
 // {
@@ -226,6 +227,20 @@ static Token identifier()
     advance();
   return makeToken(identifierType());
 }
+static Token doubleOperator(char c, TokenType type)
+{
+  if (match(c))
+  {
+    return makeToken(type);
+  }
+  else
+  {
+    char str[] = "Invalid operator. Did you mean '%c%c'?";
+    char message[1000];
+    sprintf(message, str, c, c);
+    return errorToken(message);
+  }
+}
 Token scanToken()
 {
   skipWhiteSpace();
@@ -271,6 +286,10 @@ Token scanToken()
     return makeToken(match('=') ? TOKEN_LESS_EQUAL : TOKEN_LESS);
   case '>':
     return makeToken(match('=') ? TOKEN_GREATER_EQUAL : TOKEN_GREATER);
+  case '|':
+    return doubleOperator('|', TOKEN_OR);
+  case '&':
+    return doubleOperator(c, TOKEN_AND);
   case '"':
     return string();
   }

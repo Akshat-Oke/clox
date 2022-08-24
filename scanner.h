@@ -4,7 +4,7 @@
 typedef enum
 {
   // Single-character tokens
-  TOKEN_LEFT_PAREN,
+  TOKEN_LEFT_PAREN, // 0
   TOKEN_RIGHT_PAREN,
   TOKEN_LEFT_BRACE,
   TOKEN_RIGHT_BRACE,
@@ -14,39 +14,39 @@ typedef enum
   TOKEN_PLUS,
   TOKEN_SEMICOLON,
   TOKEN_SLASH,
-  TOKEN_STAR,
-  // One or two character tokens
-  TOKEN_BANG,
+  TOKEN_STAR, // 10
+              //  One or two character tokens
+  TOKEN_BANG, // 11
   TOKEN_BANG_EQUAL,
   TOKEN_EQUAL,
   TOKEN_EQUAL_EQUAL,
   TOKEN_GREATER,
   TOKEN_GREATER_EQUAL,
   TOKEN_LESS,
-  TOKEN_LESS_EQUAL,
-  // Literals
-  TOKEN_IDENTIFIER,
+  TOKEN_LESS_EQUAL, // 18
+                    //  Literals
+  TOKEN_IDENTIFIER, // 19
   TOKEN_STRING,
   TOKEN_NUMBER,
   // Keywords
   TOKEN_AND,
-  TOKEN_CLASS,
+  TOKEN_CLASS, // 23
   TOKEN_ELSE,
-  TOKEN_FALSE,
+  TOKEN_FALSE, // 25
   TOKEN_FOR,
   TOKEN_FUN,
   TOKEN_IF,
   TOKEN_NIL,
-  TOKEN_OR,
+  TOKEN_OR, // 30
   TOKEN_PRINT,
   TOKEN_RETURN,
   TOKEN_SUPER,
-  TOKEN_TRUE,
+  TOKEN_TRUE, // 34
   TOKEN_VAR,
   TOKEN_WHILE,
-  TOKEN_THIS,
+  TOKEN_THIS, // 37
 
-  TOKEN_ERROR,
+  TOKEN_ERROR, // 38
   TOKEN_EOF
 } TokenType;
 

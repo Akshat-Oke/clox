@@ -4,7 +4,7 @@
 
 void debugLog(const char *format, ...)
 {
-  // return;
+  return;
   va_list args;
   va_start(args, format);
   vfprintf(stderr, format, args);

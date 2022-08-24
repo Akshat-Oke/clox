@@ -3,6 +3,8 @@ Program = statement* ;
 statement = exprStmt
           | printStmt
           | ifStmt
+          | whileStmt
+          | forStmt
           | block ;
 
 block = "{" declaration* "}" ;
