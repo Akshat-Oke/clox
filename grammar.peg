@@ -1,6 +1,7 @@
 Program = statement* ;
 
 statement = exprStmt
+          | funStmt
           | printStmt
           | ifStmt
           | whileStmt
