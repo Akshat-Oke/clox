@@ -1,12 +1,8 @@
-// fun sup(a){
-//   print a+"haha ya!";
-// }
-// print sup("asd");
-fun addRecursive(n){
-  if(n==1){
-    return 1;
-  }
-  return n+addRecursive(n-1);
+fun fib(n) {
+  if (n < 2) return n;
+  return fib(n - 2) + fib(n - 1);
 }
-return 0;
-print addRecursive(3);
+
+var start = clock();
+print fib(10);
+print clock() - start;
