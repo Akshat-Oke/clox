@@ -18,6 +18,7 @@ run:
 #Build and run
 go:
 	$(CC) $(CFLAGS) -o $(TARGET) $(OBJFILES) $(LDFLAGS)
-	./${TARGET}
+	./${TARGET} z_test.lox
+
 test:
 	./${TARGET} z_test.lox
