@@ -1,13 +1,8 @@
-{
-  var a = 1;
-  var b = 2 + a;
+fun outer(x) {
+  fun inner() {
+    print x;
+  }
+  return inner;
 }
-print clock(2,3,4);
-// fun fib(n) {
-//   if (n < 2) return n;
-//   return fib(n - 2) + fib(n - 1);
-// }
-
-// var start = clock();
-// print fib(3);
-// print clock() - start;
+outer(2)();
+outer(3)();

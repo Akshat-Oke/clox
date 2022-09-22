@@ -9,7 +9,8 @@
 #define STACK_MAX (FRAMES_MAX * UINT8_COUNT)
 typedef struct
 {
-  ObjFunction *function;
+  // ObjFunction *function;
+  ObjClosure *closure;
   uint8_t *ip;
   // the start of the slots in the VM's stack
   Value *slots;
@@ -30,6 +31,8 @@ typedef struct
   Table globals;
   // interned strings (unique strings stored only once)
   Table strings;
+  // upvalues as linked list
+  ObjUpvalue *openUpvalues;
   // objects as linked list
   Obj *objects;
 } VM;

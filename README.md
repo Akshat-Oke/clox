@@ -25,3 +25,19 @@ Firstly, `cd` into this folder.
 ```
 
 Since I have built this on Windows, you'll have to run `make` first to build for your OS and follow the above steps.
+
+## Additional features
+
+These are features that are not implemented in the book but I have added myself.
+
+1. Arity check for native functions. Very straightforward implementation. (Ex. `clock(1)` is invalid)
+2. [In development] Forward declaration support. Since this is a single pass compiler, there was no way to write mutually recursive functions. This mimicks `C` or `C++` forward declarations.
+
+## Building
+
+| Command     | Action                    |
+| ----------- | ------------------------- |
+| `make`      | Build                     |
+| `make run`  | Run REPL                  |
+| `make test` | Run z_test.clox           |
+| `make go`   | Build and run z_test.clox |

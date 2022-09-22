@@ -21,6 +21,16 @@ static void freeObject(Obj *object)
 {
   switch (object->type)
   {
+  case OBJ_CLOSURE:
+  {
+    // free the array, but not the Upvalues
+    ObjClosure *closure = (ObjClosure *)object;
+    FREE_ARRAY(ObjUpvalue *, closure->upvalues, closure->upvalueCount);
+    // do not free the function because other
+    // closures may use the same function
+    FREE(ObjClosure, object);
+    break;
+  }
   case OBJ_FUNCTION:
   {
     ObjFunction *func = (ObjFunction *)object;
@@ -38,6 +48,10 @@ static void freeObject(Obj *object)
     FREE(ObjString, object);
     break;
   }
+  case OBJ_UPVALUE:
+    // upvalue does not own the value
+    FREE(ObjUpvalue, object);
+    break;
   }
 }
 void freeObjects()

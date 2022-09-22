@@ -9,12 +9,14 @@
 // the value must be an object
 #define OBJ_TYPE(value) (AS_OBJ(value)->type)
 
+#define IS_CLOSURE(value) isObjType(value, OBJ_CLOSURE)
 #define IS_FUNCTION(value) isObjType(value, OBJ_FUNCTION)
 #define IS_NATIVE(value) isObjType(value, OBJ_NATIVE)
 // check if obj is string so we can cast
 // obj* to obj_string*
 #define IS_STRING(value) isObjType(value, OBJ_STRING)
 
+#define AS_CLOSURE(value) ((ObjClosure *)AS_OBJ(value))
 #define AS_FUNCTION(value) ((ObjFunction *)AS_OBJ(value))
 #define AS_NATIVE_OBJ(value) ((ObjNative *)AS_OBJ(value))
 #define AS_NATIVE(value) (((ObjNative *)AS_OBJ(value))->function)
@@ -23,9 +25,11 @@
 
 typedef enum
 {
+  OBJ_CLOSURE,
   OBJ_FUNCTION,
   OBJ_NATIVE,
   OBJ_STRING,
+  OBJ_UPVALUE,
 } ObjType;
 
 struct Obj
@@ -37,6 +41,7 @@ typedef struct
 {
   Obj obj;
   int arity;
+  int upvalueCount;
   Chunk chunk;
   ObjString *name;
 } ObjFunction;
@@ -56,12 +61,34 @@ struct ObjString
   char *chars;
   uint32_t hash;
 };
+typedef struct
+{
+  Obj obj;
+  // location points to the
+  // actual value stored
+  Value *location;
+  // this is where the closed value is
+  // stored on the heap
+  Value closed;
+  struct ObjUpvalue *next;
+} ObjUpvalue;
+typedef struct
+{
+  Obj obj;
+  ObjFunction *function;
+  ObjUpvalue **upvalues;
+  int upvalueCount;
+} ObjClosure;
+
+ObjClosure *newClosure(ObjFunction *function);
 ObjFunction *newFunction();
 ObjNative *newNative(NativeFn function, int arity);
 // takes ownership of the string passed in
 ObjString *takeString(char *chars, int length);
 ObjString *copyString(const char *chars, int length);
 void printObject(Value value);
+
+ObjUpvalue *newUpvalue(Value *slot);
 
 static inline bool isObjType(Value value, ObjType type)
 {
